@@ -6,16 +6,17 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Copyright>Copyright 2018</Copyright>
     <PackageLicenseUrl>https://raw.githubusercontent.com/yavuztor/JsonLogic.Net/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/yavuztor/JsonLogic.Net</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/jnnwnk/JsonLogic.Net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/yavuztor/JsonLogic.Net</RepositoryUrl>
     <PackageTags>jsonlogic specification evaluator</PackageTags>
     <PackageReleaseNotes>
-      https://github.com/yavuztor/JsonLogic.Net/blob/master/release-notes.md
-    </PackageReleaseNotes>
-    <Authors>Yavuz Tor</Authors>
+      https://raw.githubusercontent.com/jnnwnk/JsonLogic.Net/master/release-notes.md
+</PackageReleaseNotes>
+    <Authors>Yavuz Tor, Janna Wieneke</Authors>
     <Description>A .Net implementation of [JsonLogic](http://jsonlogic.com).</Description>
     <Summary>JsonLogic defines a set of operators and rules to form a json definition of an expression, which can be evaluated against a data object. This helps serializing specification logic into client-side or to a back-end storage. It also helps to evaluate the same expression using different languages.</Summary>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>    
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageId>JnnWnk.JsonLogic.Net</PackageId>    
   </PropertyGroup>
 
   <ItemGroup>
