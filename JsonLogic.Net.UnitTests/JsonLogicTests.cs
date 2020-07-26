@@ -145,7 +145,7 @@ namespace JsonLogic.Net.UnitTests
         {
             // Arrange
             var rules = JsonFrom(argsJson);
-            var jsonLogic = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var jsonLogic = new JsonLogicEvaluator(EvaluateOperators.Default());
 
             _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rules} against {Data}");
 
@@ -180,7 +180,7 @@ namespace JsonLogic.Net.UnitTests
         {
             // Arrange
             var rules = JsonFrom(rulesJson);
-            var jsonLogic = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var jsonLogic = new JsonLogicEvaluator(EvaluateOperators.Default());
             object result = null;
 
             _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rules} against {Data}");
@@ -207,7 +207,7 @@ namespace JsonLogic.Net.UnitTests
             string jsonText = "{\">\": [{\"var\": \"MyNumber\"}, 3]}";
             var rule = JObject.Parse(jsonText);
             object localData = new {MyNumber = 8};
-            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default());
 
             _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rule} against {localData}");
 
@@ -227,7 +227,7 @@ namespace JsonLogic.Net.UnitTests
             string dataJson = "{`marital_status`: `Divorced`}".Replace('`', '"');
             var rule = JObject.Parse(ruleJson);
             var localData = JObject.Parse(dataJson);
-            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default());
 
             _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rule} against {localData}");
 
@@ -246,7 +246,7 @@ namespace JsonLogic.Net.UnitTests
             string ruleJson =
                 "{ `and` : [  {`<` : [ { `var` : `temp` }, 110 ]},  {`==` : [ { `var` : `pie.filling` }, `apple` ] }] }"
                     .Replace('`', '"');
-            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default());
             var rule = JObject.Parse(ruleJson);
             var localData = JObject.Parse(dataJson);
 
@@ -269,7 +269,7 @@ namespace JsonLogic.Net.UnitTests
             ruleJson = ruleJson.Replace('`', '"');
             expectedJson = expectedJson.Replace('`', '"');
 
-            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default());
             var rule = JsonFrom(ruleJson);
             var localData = GetDataObject(JsonFrom(dataJson));
             var expectedResult = GetDataObject(JsonFrom(expectedJson));
@@ -311,7 +311,7 @@ namespace JsonLogic.Net.UnitTests
         public void EqualityAndInequalityHandling(string ruleJson, object expectedResult)
         {
             var rule = JsonFrom(ruleJson);
-            var jsonLogic = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var jsonLogic = new JsonLogicEvaluator(EvaluateOperators.Default());
 
             _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rule}");
 
@@ -344,7 +344,7 @@ namespace JsonLogic.Net.UnitTests
         {
             var rule = JsonFrom(ruleJson);
             var localData = JsonFrom(dataJson);
-            var jsonLogic = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var jsonLogic = new JsonLogicEvaluator(EvaluateOperators.Default());
 
             _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rule} against {localData}");
             // Act
@@ -361,7 +361,7 @@ namespace JsonLogic.Net.UnitTests
             var data = GetDataObject(JsonFrom(dataJson));
             var expected = GetDataObject(JsonFrom(expectedJson));
 
-            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default());
 
             _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rule} against {data}");
 
@@ -378,7 +378,7 @@ namespace JsonLogic.Net.UnitTests
             var data = GetDataObject(JsonFrom(dataJson));
             var expected = GetDataObject(JsonFrom(expectedJson));
 
-            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default());
 
             _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rule} against {data}");
 
@@ -430,7 +430,7 @@ namespace JsonLogic.Net.UnitTests
                     }
                 ]
                 }".Replace('`', '"'));
-            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default);
+            var evaluator = new JsonLogicEvaluator(EvaluateOperators.Default());
 
             _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rules} against {localData}");
 
@@ -441,6 +441,31 @@ namespace JsonLogic.Net.UnitTests
             Assert.Equal(1, (result as object[]).Length);
 
 
+        }
+
+        [Theory]
+        [MemberData(nameof(NamingConventionConvertionTestData))]
+        public void ApplyWithNamingConventionConvertion(NamingConventionEnum ruleNamingConvention, NamingConventionEnum dataNamingConvention, string ruleJson, 
+            object data, object expectedResult)
+        {
+            // Arrange
+            var rules = JsonFrom(ruleJson);
+            var jsonLogic = new JsonLogicEvaluator(EvaluateOperators.Default(ruleNamingConvention, dataNamingConvention));
+
+            _output.WriteLine($"{MethodBase.GetCurrentMethod().Name}() Testing {rules} against {data}");
+
+            // Act
+            var actualResult = jsonLogic.Apply(rules, data);
+
+            // Act & Assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        public static IEnumerable<object[]> NamingConventionConvertionTestData()
+        {
+            yield return new object[] { NamingConventionEnum.CamelCase, NamingConventionEnum.PascalCase, "{'==': [1, {'var': 'myVariable'}]}", JsonFrom("{'MyVariable': 1}"), true};
+            yield return new object[] { NamingConventionEnum.CamelCase, NamingConventionEnum.PascalCase, "{'==': ['hello world', {'var': 'myNestedClass.myStringProperty'}]}", new MyClass { MyNestedClass = new MyClass { MyStringProperty = "hello world" } }, true };
+            yield return new object[] { NamingConventionEnum.CamelCase, NamingConventionEnum.PascalCase, "{'+': [1, {'var': 'myNestedClass.myIntProperty'}]}", new MyClass { MyNestedClass = new MyClass { MyIntProperty = 10 } }, 11.0 };
         }
 
         private object GetDataObject(JToken token)
@@ -483,4 +508,11 @@ namespace JsonLogic.Net.UnitTests
             return value;
         }
     }
+
+    internal class MyClass
+    {
+        public string MyStringProperty { get; set; }
+        public int MyIntProperty { get; set; }
+        public MyClass MyNestedClass { get; set; }
+    } 
 }

@@ -10,13 +10,27 @@ namespace JsonLogic.Net
     public class EvaluateOperators : IManageOperators
     {
         private Dictionary<string, Func<IProcessJsonLogic, JToken[], object, object>> registry;
+        private INamingConventionConverter namingConventionConverter;
 
-        public static EvaluateOperators Default { get; } = new EvaluateOperators();
+        public static EvaluateOperators Default(NamingConventionEnum? ruleNamingConvention = null, NamingConventionEnum? dataNamingConvention = null) {
+            if (ruleNamingConvention != null && dataNamingConvention != null)
+            {
+                return new EvaluateOperators(new NamingConventionConverter(ruleNamingConvention.Value, dataNamingConvention.Value));
+            }
+            return new EvaluateOperators();
+        }
 
         public EvaluateOperators()
         {
             registry = new Dictionary<string, Func<IProcessJsonLogic, JToken[], object, object>>();
             AddDefaultOperations();
+        }
+
+        public EvaluateOperators(INamingConventionConverter namingConventionConverter)
+        {
+            registry = new Dictionary<string, Func<IProcessJsonLogic, JToken[], object, object>>();
+            AddDefaultOperations();
+            this.namingConventionConverter = namingConventionConverter;
         }
         
         public void AddOperator(string name, Func<IProcessJsonLogic, JToken[], object, object> operation)
@@ -280,7 +294,7 @@ namespace JsonLogic.Net
                 {
                     var type = DictionaryType(d);
                     var prop = type.GetTypeInfo().DeclaredProperties.FirstOrDefault(p => p.Name == "Item");
-                    d = prop.GetValue(d, new object[]{ name });
+                    d = prop.GetValue(d, new object[]{ ConvertName(name) });
                 }
                 else if (d is IEnumerable<object>) 
                 {
@@ -288,12 +302,21 @@ namespace JsonLogic.Net
                 }
                 else 
                 {
-                    var property = d.GetType().GetTypeInfo().GetDeclaredProperty(name);
+                    var property = d.GetType().GetTypeInfo().GetDeclaredProperty(ConvertName(name));
                     if (property == null) throw new Exception();
                     d = property.GetValue(d);
                 }
             }
             return d;
+        }
+
+        private string ConvertName(string input)
+        {
+            if (namingConventionConverter == null)
+            {
+                return input;
+            }
+            return namingConventionConverter.Convert(input);
         }
 
         private Type DictionaryType(object d)
